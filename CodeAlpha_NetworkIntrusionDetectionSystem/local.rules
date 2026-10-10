@@ -1,0 +1,18 @@
+# Custom Suricata rules - CodeAlpha NIDS task
+# sid range 1000001+ is reserved for local rules
+
+alert icmp any any -> $HOME_NET any (msg:"LOCAL ICMP ping detected"; itype:8; sid:1000001; rev:1;)
+
+alert tcp any any -> $HOME_NET any (msg:"LOCAL Possible port scan (SYN flood from one host)"; flags:S; threshold:type both, track by_src, count 20, seconds 5; classtype:attempted-recon; sid:1000002; rev:1;)
+
+alert tcp any any -> $HOME_NET 22 (msg:"LOCAL SSH brute force attempt"; flags:S; threshold:type both, track by_src, count 5, seconds 60; classtype:attempted-admin; sid:1000003; rev:1;)
+
+alert http any any -> $HOME_NET any (msg:"LOCAL SQL injection attempt in URI"; flow:established,to_server; http.uri; content:"union"; nocase; content:"select"; nocase; distance:0; classtype:web-application-attack; sid:1000004; rev:1;)
+
+alert http any any -> $HOME_NET any (msg:"LOCAL Directory traversal attempt"; flow:established,to_server; http.uri; content:"../"; classtype:web-application-attack; sid:1000005; rev:1;)
+
+alert http any any -> $HOME_NET any (msg:"LOCAL XSS attempt (script tag in URI)"; flow:established,to_server; http.uri; content:"<script"; nocase; classtype:web-application-attack; sid:1000006; rev:1;)
+
+alert http any any -> $HOME_NET any (msg:"LOCAL Suspicious scanner User-Agent (sqlmap/nikto)"; flow:established,to_server; http.user_agent; pcre:"/(sqlmap|nikto|nmap)/i"; classtype:web-application-attack; sid:1000007; rev:1;)
+
+alert dns any any -> any any (msg:"LOCAL DNS query to suspicious .xyz domain"; dns.query; content:".xyz"; nocase; endswith; sid:1000008; rev:1;)
